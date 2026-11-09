@@ -337,7 +337,7 @@ Item {
                             Text {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: root.taskBeingEdited === modelData.id ? "✓" : "✎"
+                                text: "✎"
                                 color: Palette.gold
                                 font.pixelSize: 13
                                 width: 17
