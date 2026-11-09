@@ -40,7 +40,7 @@ Item {
         var title = titleField.text.trim();
         if (!title.length) return;
         var due = dueField.text.trim();
-        if (due.length && !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(due)) {
+        if (due.length && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(due)) {
             dueField.placeholderText = "Use YYYY-MM-DDTHH:mm";
             return;
         }
@@ -180,7 +180,7 @@ Item {
 
                 TextField {
                     id: dueField
-                    width: parent.width - (root.editingTaskId !== null ? 108 : 74)
+                    width: parent.width - (root.editingTaskId !== null ? 108 : 80)
                     height: 28
                     placeholderText: "Due · YYYY-MM-DDTHH:mm"
                     font.family: "JetBrainsMono Nerd Font"
