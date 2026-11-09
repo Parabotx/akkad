@@ -31,6 +31,8 @@ The installer previews packages, asks before installing, backs up existing AKKAD
 
 Log out and select **Hyprland** from your display manager, or start it from a TTY with `start-hyprland`.
 
+The installer keeps a checkout at `~/.local/share/akkad` and adds the `akkad` command to `~/.local/bin`.
+
 ## First shortcuts
 
 | Shortcut | Action |
@@ -71,5 +73,7 @@ Log out and select **Hyprland** from your display manager, or start it from a TT
 ## Important
 
 Hyprland's configuration changed to Lua in version 0.55. AKKAD targets the current Lua configuration model. The installer checks for the required tools but does not attempt to modify system boot, login, GPU drivers, or display-manager configuration.
+
+Use `akkad -u` to update, `akkad -d` to run diagnostics, and `akkad -h` for help.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
