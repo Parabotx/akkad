@@ -2,25 +2,26 @@
 set -Eeuo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 DISABLED_MARKER="$STATE_HOME/akkad/shell-disabled"
+QS_CONFIG="$CONFIG_HOME/quickshell/akkad"
 QS_BIN="$(command -v quickshell || true)"
 
 say() { printf '\033[1;36m[AKKAD]\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31m[AKKAD]\033[0m %s\n' "$*" >&2; exit 1; }
 
 [[ -n "$QS_BIN" ]] || die "quickshell is not installed. Install the AKKAD package set first."
+[[ -f "$QS_CONFIG/shell.qml" ]] || die "AKKAD shell config was not found at $QS_CONFIG."
 
 stop_shell() {
-  local binary
-  binary="$(readlink -f "$QS_BIN")"
-  pkill -f "^$binary --config akkad" 2>/dev/null || true
+  "$QS_BIN" kill --path "$QS_CONFIG" --any-display >/dev/null 2>&1 || true
 }
 
 start_shell() {
   rm -f "$DISABLED_MARKER"
   stop_shell
   say "Starting the AKKAD shell..."
-  "$QS_BIN" --config akkad --no-duplicate --daemonize
+  "$QS_BIN" --path "$QS_CONFIG" --no-duplicate --daemonize
 }
 
 case "${1:-status}" in
@@ -29,7 +30,7 @@ case "${1:-status}" in
       say "Shell autostart is disabled."
       exit 0
     fi
-    "$QS_BIN" --config akkad --no-duplicate --daemonize
+    "$QS_BIN" --path "$QS_CONFIG" --no-duplicate --daemonize
     ;;
   start|enable)
     mkdir -p "$(dirname "$DISABLED_MARKER")"
@@ -42,7 +43,7 @@ case "${1:-status}" in
   restart)
     stop_shell
     sleep 0.5
-    "$QS_BIN" --config akkad --no-duplicate --daemonize
+    "$QS_BIN" --path "$QS_CONFIG" --no-duplicate --daemonize
     say "Restarted the AKKAD shell."
     ;;
   disable)
@@ -52,12 +53,8 @@ case "${1:-status}" in
     say "Shell disabled. It will stay off after future logins."
     ;;
   status)
-    binary="$(readlink -f "$QS_BIN")"
-    if pgrep -af "^$binary --config akkad" >/dev/null; then
-      say "AKKAD shell is running."
-    else
-      say "AKKAD shell is not running."
-    fi
+    say "Quickshell instances matching the AKKAD config path:"
+    "$QS_BIN" list --path "$QS_CONFIG" --any-display
     if [[ -e "$DISABLED_MARKER" ]]; then
       say "Autostart: disabled."
     else

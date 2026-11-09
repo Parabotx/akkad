@@ -27,7 +27,7 @@ cd akkad
 
 The installer previews packages and asks before installing. Existing managed configuration folders are backed up under `~/.local/state/akkad/backups/`. It does not remove your current desktop, replace your display manager, change boot settings, or modify GPU drivers.
 
-After installation, log out and select Hyprland. The AKKAD Quickshell interface starts with the Hyprland session.
+After installation, log out and select Hyprland. The AKKAD Quickshell interface starts with the Hyprland session. It is launched by an explicit config path, so an existing default Quickshell shell can remain in place.
 
 ## Commands
 

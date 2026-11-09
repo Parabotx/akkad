@@ -36,7 +36,6 @@ network-manager-applet
 brightnessctl
 playerctl
 udiskie
-procps-ng
 
 # Fonts, themes and utilities
 ttf-jetbrains-mono-nerd
