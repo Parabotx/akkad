@@ -29,6 +29,7 @@ for source in "$REPO_DIR"/config/*; do
   cp -a "$source/." "$CONFIG_HOME/$name/"
 done
 
+install -m 755 "$REPO_DIR/scripts/akkad" "$HOME/.local/bin/akkad"
 install -m 755 "$REPO_DIR/scripts/akkad-update" "$HOME/.local/bin/akkad-update"
 install -m 755 "$REPO_DIR/scripts/akkad-doctor" "$HOME/.local/bin/akkad-doctor"
 say "Updated configuration. Previous copies are in $BACKUP_DIR"
