@@ -1,5 +1,5 @@
 -- AKKAD / Hyprland Lua configuration
--- Target: Hyprland 0.55+. Native Lua configuration; no legacy hyprland.conf.
+-- Target: Hyprland 0.55+. Uses the native Lua API introduced in 0.55.
 
 local mod = "SUPER"
 local terminal = "foot"
@@ -13,9 +13,9 @@ hl.config({
         touchpad = {
             natural_scroll = true,
             tap_to_click = true,
-            drag_lock = true,
         },
     },
+
     general = {
         gaps_in = 5,
         gaps_out = 12,
@@ -23,65 +23,82 @@ hl.config({
         layout = "dwindle",
         resize_on_border = true,
         allow_tearing = false,
-        ["col.active_border"] = "rgba(c9a66bff)",
-        ["col.inactive_border"] = "rgba(55515a88)",
+        col = {
+            active_border = {
+                colors = { "rgba(c9a66bff)", "rgba(8f7550ff)" },
+                angle = 45,
+            },
+            inactive_border = "rgba(55515a88)",
+        },
     },
+
     decoration = {
         rounding = 12,
+        rounding_power = 2,
         active_opacity = 0.97,
         inactive_opacity = 0.93,
         shadow = {
             enabled = true,
             range = 18,
             render_power = 3,
-            color = "rgba(08090fee)",
+            color = 0xee08090f,
         },
         blur = {
             enabled = true,
             size = 6,
             passes = 2,
-            xray = false,
-            noise = 0.02,
-            contrast = 0.92,
-            brightness = 0.82,
+            vibrancy = 0.08,
         },
     },
+
     animations = {
         enabled = true,
-        bezier = {
-            "akkad-smooth", 0.22, 1, 0.36, 1,
-            "akkad-soft", 0.16, 1, 0.3, 1,
-        },
-        animation = {
-            "windows", 1, 5, "akkad-smooth",
-            "windowsIn", 1, 4, "akkad-soft", "popin",
-            "windowsOut", 1, 3, "akkad-soft", "popin",
-            "border", 1, 6, "akkad-smooth",
-            "fade", 1, 4, "akkad-soft",
-            "workspaces", 1, 5, "akkad-smooth",
-        },
     },
+
     dwindle = {
         pseudotile = true,
         preserve_split = true,
     },
+
     master = {
         new_status = "master",
     },
+
     misc = {
         disable_hyprland_logo = true,
         disable_splash_rendering = true,
         mouse_move_enables_dpms = true,
         key_press_enables_dpms = true,
-        vrr = 0,
     },
+
     cursor = {
         hide_on_key_press = true,
     },
 })
 
+-- Curves and animations use the current Lua API, not the legacy
+-- hyprland.conf animation syntax.
+hl.curve("akkad-smooth", {
+    type = "bezier",
+    points = { { 0.22, 1.0 }, { 0.36, 1.0 } },
+})
+
+hl.curve("akkad-soft", {
+    type = "bezier",
+    points = { { 0.16, 1.0 }, { 0.30, 1.0 } },
+})
+
+hl.animation({ leaf = "global", enabled = true, speed = 8, bezier = "akkad-smooth" })
+hl.animation({ leaf = "windows", enabled = true, speed = 5, bezier = "akkad-smooth", style = "popin 92%" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 4, bezier = "akkad-soft", style = "popin 92%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "akkad-soft", style = "popin 92%" })
+hl.animation({ leaf = "fade", enabled = true, speed = 4, bezier = "akkad-soft" })
+hl.animation({ leaf = "border", enabled = true, speed = 5, bezier = "akkad-smooth" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "akkad-smooth", style = "slidefade 12%" })
+
 -- Environment for native Wayland applications.
 hl.env("XCURSOR_SIZE", "24")
+hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 hl.env("GDK_BACKEND", "wayland,x11")
 hl.env("SDL_VIDEODRIVER", "wayland")
@@ -99,7 +116,7 @@ hl.bind(mod .. " + V", hl.dsp.window.fullscreen())
 hl.bind(mod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mod .. " + TAB", hl.dsp.layout("togglesplit"))
 hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
-hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
+hl.bind(mod .. " + SHIFT + R", hl.dsp.reload_config())
 
 -- Focus and move windows using Vim-style keys.
 hl.bind(mod .. " + H", hl.dsp.focus({ direction = "left" }))
@@ -127,12 +144,13 @@ hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"))
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl set +5%"))
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"))
 
--- Session services. Waybar is the temporary panel until the AKKAD
--- Quickshell interface is implemented; both are deliberately independent.
-hl.exec_cmd("systemctl --user start hyprpolkitagent")
-hl.exec_cmd("mako")
-hl.exec_cmd("hyprpaper")
-hl.exec_cmd("hypridle")
-hl.exec_cmd("waybar")
-hl.exec_cmd("nm-applet --indicator")
-hl.exec_cmd("udiskie --tray")
+-- Start session services after the compositor is ready.
+hl.on("hyprland.start", function()
+    hl.exec_cmd("systemctl --user start hyprpolkitagent")
+    hl.exec_cmd("mako")
+    hl.exec_cmd("hyprpaper")
+    hl.exec_cmd("hypridle")
+    hl.exec_cmd("waybar")
+    hl.exec_cmd("nm-applet --indicator")
+    hl.exec_cmd("udiskie --tray")
+end)
