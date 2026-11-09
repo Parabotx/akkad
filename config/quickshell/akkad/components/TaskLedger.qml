@@ -109,6 +109,7 @@ Item {
         path: Quickshell.dataPath("tasks.json")
         blockLoading: true
         atomicWrites: true
+        watchChanges: true
         onFileChanged: root.loadTasks()
     }
 
