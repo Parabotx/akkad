@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+VERSION="0.1.0"
+BIN_DIR="$HOME/.local/bin"
+REPO_DIR="${AKKAD_DIR:-$HOME/.local/share/akkad}"
+
+usage() {
+  cat <<'EOF'
+AKKAD — Arch Linux desktop environment
+
+Usage:
+  akkad -u, --update     Pull updates and safely sync configuration
+  akkad -d, --doctor     Check required desktop components
+  akkad -i, --install    Run the installer from the repository checkout
+  akkad -v, --version    Show version
+  akkad -h, --help       Show this help
+
+Repository: https://github.com/Parabotx/akkad
+EOF
+}
+
+case "${1:---help}" in
+  -u|--update) exec "$BIN_DIR/akkad-update" ;;
+  -d|--doctor) exec "$BIN_DIR/akkad-doctor" ;;
+  -i|--install)
+    [[ -x "$REPO_DIR/install.sh" ]] || { printf 'AKKAD checkout not found at %s\n' "$REPO_DIR" >&2; exit 1; }
+    exec "$REPO_DIR/install.sh"
+    ;;
+  -v|--version) printf 'AKKAD %s\n' "$VERSION" ;;
+  -h|--help) usage ;;
+  *) printf 'Unknown option: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
+esac
