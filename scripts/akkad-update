@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+REPO_DIR="${AKKAD_DIR:-$HOME/.local/share/akkad}"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+BACKUP_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/akkad/update-backups/$(date +%Y%m%d-%H%M%S)"
+
+say() { printf '\033[1;36m[AKKAD]\033[0m %s\n' "$*"; }
+die() { printf '\033[1;31m[ERROR]\033[0m %s\n' "$*" >&2; exit 1; }
+
+command -v git >/dev/null 2>&1 || die "git is required."
+if [[ ! -d "$REPO_DIR/.git" ]]; then
+  mkdir -p "$(dirname "$REPO_DIR")"
+  git clone https://github.com/Parabotx/akkad.git "$REPO_DIR"
+else
+  git -C "$REPO_DIR" diff --quiet || die "Repository has uncommitted tracked changes. Commit or stash them before updating."
+  git -C "$REPO_DIR" pull --ff-only
+fi
+
+mkdir -p "$BACKUP_DIR"
+for name in hypr foot fuzzel mako hyprlock hypridle waybar; do
+  [[ -e "$CONFIG_HOME/$name" ]] && cp -a "$CONFIG_HOME/$name" "$BACKUP_DIR/"
+done
+
+for source in "$REPO_DIR"/config/*; do
+  [[ -d "$source" ]] || continue
+  name="$(basename "$source")"
+  mkdir -p "$CONFIG_HOME/$name"
+  cp -a "$source/." "$CONFIG_HOME/$name/"
+done
+
+install -m 755 "$REPO_DIR/scripts/akkad-update" "$HOME/.local/bin/akkad-update"
+install -m 755 "$REPO_DIR/scripts/akkad-doctor" "$HOME/.local/bin/akkad-doctor"
+say "Updated configuration. Previous copies are in $BACKUP_DIR"
+say "Review your local overrides before reloading Hyprland."
