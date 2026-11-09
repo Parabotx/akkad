@@ -28,7 +28,7 @@ if [[ $mem_total -gt 0 ]]; then
   mem_percent=$(awk -v u="$mem_used" -v t="$mem_total" 'BEGIN { printf "%.1f", (u/t)*100 }')
 fi
 
-read -r disk_total_kb disk_used_kb disk_percent_raw < <(df -Pk "$HOME" 2>/dev/null | awk 'END {gsub(/%/, "", $5); print $2, $3, $5}')
+read -r disk_total_kb disk_used_kb disk_percent_raw < <(df -Pk / 2>/dev/null | awk 'END {gsub(/%/, "", $5); print $2, $3, $5}')
 disk_total=$((${disk_total_kb:-0} * 1024))
 disk_used=$((${disk_used_kb:-0} * 1024))
 disk_percent="${disk_percent_raw:-0}"

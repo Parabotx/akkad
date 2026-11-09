@@ -55,7 +55,7 @@ Item {
                     source: root.player ? root.player.trackArtUrl : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
-                    visible: root.player !== null && root.player.trackArtUrl.length > 0
+                    visible: root.player !== null && root.player.trackArtUrl.toString().length > 0
                 }
 
                 Text {
@@ -63,7 +63,7 @@ Item {
                     text: "✦"
                     color: Palette.amber
                     font.pixelSize: 30
-                    visible: !root.player || !root.player.trackArtUrl.length
+                    visible: !root.player || root.player.trackArtUrl.toString().length === 0
                 }
             }
 
