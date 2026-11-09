@@ -134,7 +134,6 @@ Item {
                         required property var modelData
                         width: calendarGrid.width / 7
                         height: 20
-                        visible: modelData > 0
 
                         Rectangle {
                             anchors.centerIn: parent

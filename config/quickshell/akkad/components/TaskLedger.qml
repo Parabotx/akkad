@@ -13,13 +13,13 @@ Item {
     property bool showCompleted: false
     property var pendingTasks: root.tasks.filter(function(task) { return !task.completed; })
     property var completedTasks: root.tasks.filter(function(task) { return task.completed; })
-    property var displayedTasks: (root.showCompleted ? root.completedTasks : root.pendingTasks).slice(0, 5)
+    property var displayedTasks: root.showCompleted ? root.completedTasks : root.pendingTasks
     property var upcomingTask: {
         var scheduled = root.pendingTasks.filter(function(task) { return task.due && Date.parse(task.due) > Date.now(); });
         scheduled.sort(function(a, b) { return Date.parse(a.due) - Date.parse(b.due); });
         return scheduled.length ? scheduled[0] : null;
     }
-    property var taskBeingEdited: null
+    property var editingTaskId: null
 
     function loadTasks() {
         try {
@@ -40,23 +40,53 @@ Item {
         var title = titleField.text.trim();
         if (!title.length) return;
         var due = dueField.text.trim();
-        if (due.length && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(due)) {
-            dueField.text = "";
+        if (due.length && !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(due)) {
             dueField.placeholderText = "Use YYYY-MM-DDTHH:mm";
             return;
         }
-        var next = root.tasks.slice();
-        next.push({
-            id: Date.now(),
-            title: title,
-            due: due,
-            completed: false,
-            created: new Date().toISOString()
-        });
-        root.tasks = next;
+
+        if (root.editingTaskId !== null) {
+            root.tasks = root.tasks.map(function(task) {
+                var copy = Object.assign({}, task);
+                if (copy.id === root.editingTaskId) {
+                    copy.title = title;
+                    copy.due = due;
+                }
+                return copy;
+            });
+            root.editingTaskId = null;
+        } else {
+            var next = root.tasks.slice();
+            next.push({
+                id: Date.now(),
+                title: title,
+                due: due,
+                completed: false,
+                created: new Date().toISOString()
+            });
+            root.tasks = next;
+        }
+
         root.saveTasks();
         titleField.text = "";
         dueField.text = "";
+        titleField.placeholderText = "Add an imperial duty…";
+        dueField.placeholderText = "Due · YYYY-MM-DDTHH:mm";
+    }
+
+    function beginEdit(task) {
+        root.editingTaskId = task.id;
+        titleField.text = task.title;
+        dueField.text = task.due || "";
+        titleField.forceActiveFocus();
+    }
+
+    function cancelEdit() {
+        root.editingTaskId = null;
+        titleField.text = "";
+        dueField.text = "";
+        titleField.placeholderText = "Add an imperial duty…";
+        dueField.placeholderText = "Due · YYYY-MM-DDTHH:mm";
     }
 
     function setCompleted(taskId, value) {
@@ -66,17 +96,6 @@ Item {
             return copy;
         });
         root.tasks = next;
-        root.saveTasks();
-    }
-
-    function updateTitle(taskId, title) {
-        if (!title.trim().length) return;
-        root.tasks = root.tasks.map(function(task) {
-            var copy = Object.assign({}, task);
-            if (copy.id === taskId) copy.title = title.trim();
-            return copy;
-        });
-        root.taskBeingEdited = null;
         root.saveTasks();
     }
 
@@ -138,7 +157,7 @@ Item {
                 id: titleField
                 width: parent.width
                 height: 31
-                placeholderText: "Add an imperial duty…"
+                placeholderText: root.editingTaskId !== null ? "Edit the selected duty…" : "Add an imperial duty…"
                 font.family: "Noto Sans"
                 font.pixelSize: 11
                 color: Palette.ivory
@@ -161,7 +180,7 @@ Item {
 
                 TextField {
                     id: dueField
-                    width: parent.width - 74
+                    width: parent.width - (root.editingTaskId !== null ? 108 : 74)
                     height: 28
                     placeholderText: "Due · YYYY-MM-DDTHH:mm"
                     font.family: "JetBrainsMono Nerd Font"
@@ -188,7 +207,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "＋  ADD"
+                        text: root.editingTaskId !== null ? "✓  SAVE" : "＋  ADD"
                         color: Palette.amber
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 9
@@ -200,6 +219,29 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.addTask()
+                    }
+                }
+
+                Rectangle {
+                    width: root.editingTaskId !== null ? 28 : 0
+                    height: 28
+                    radius: 5
+                    visible: root.editingTaskId !== null
+                    color: cancelMouse.containsMouse ? "rgba(201,154,80,0.16)" : "transparent"
+                    border.width: visible ? 1 : 0
+                    border.color: Palette.faint
+                    Text {
+                        anchors.centerIn: parent
+                        text: "×"
+                        color: Palette.sandstone
+                        font.pixelSize: 15
+                    }
+                    MouseArea {
+                        id: cancelMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.cancelEdit()
                     }
                 }
             }
@@ -280,32 +322,10 @@ Item {
                                 }
                             }
 
-                            TextField {
-                                id: editField
-                                x: 18
-                                y: 0
-                                width: parent.width - 72
-                                height: 25
-                                visible: root.taskBeingEdited === modelData.id
-                                text: modelData.title
-                                font.family: "Noto Sans"
-                                font.pixelSize: 10
-                                color: Palette.ivory
-                                selectByMouse: true
-                                onAccepted: root.updateTitle(modelData.id, text)
-                                background: Rectangle {
-                                    color: "rgba(9,9,9,0.7)"
-                                    border.color: Palette.gold
-                                    border.width: 1
-                                    radius: 3
-                                }
-                            }
-
                             Text {
                                 x: 18
                                 y: 2
                                 width: parent.width - 72
-                                visible: root.taskBeingEdited !== modelData.id
                                 text: modelData.title
                                 color: modelData.completed ? Palette.muted : Palette.ivory
                                 font.family: "Noto Sans"
@@ -326,15 +346,7 @@ Item {
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        if (root.taskBeingEdited === modelData.id)
-                                            root.updateTitle(modelData.id, editField.text);
-                                        else {
-                                            root.taskBeingEdited = modelData.id;
-                                            editField.text = modelData.title;
-                                            editField.forceActiveFocus();
-                                        }
-                                    }
+                                    onClicked: root.beginEdit(modelData)
                                 }
                             }
 
