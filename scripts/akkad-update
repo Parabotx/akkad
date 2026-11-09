@@ -13,7 +13,7 @@ if [[ ! -d "$REPO_DIR/.git" ]]; then
   mkdir -p "$(dirname "$REPO_DIR")"
   git clone https://github.com/Parabotx/akkad.git "$REPO_DIR"
 else
-  git -C "$REPO_DIR" diff --quiet || die "Repository has uncommitted tracked changes. Commit or stash them before updating."
+  [[ -z "$(git -C "$REPO_DIR" status --porcelain)" ]] || die "Repository has local changes. Commit or stash them before updating."
   git -C "$REPO_DIR" pull --ff-only
 fi
 
