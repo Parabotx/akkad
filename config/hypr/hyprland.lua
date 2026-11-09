@@ -92,7 +92,7 @@ hl.bind(mod .. " + RETURN", hl.dsp.exec_cmd(terminal))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd(launcher))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd("thunar"))
 hl.bind(mod .. " + B", hl.dsp.exec_cmd("firefox"))
-hl.bind(mod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+hl.bind(mod .. " + ESCAPE", hl.dsp.exec_cmd("hyprlock"))
 hl.bind(mod .. " + Q", hl.dsp.window.close())
 hl.bind(mod .. " + F", hl.dsp.window.float())
 hl.bind(mod .. " + V", hl.dsp.window.fullscreen())
@@ -113,7 +113,7 @@ hl.bind(mod .. " + SHIFT + J", hl.dsp.window.move({ direction = "down" }))
 
 -- Workspaces 1–5.
 for i = 1, 5 do
-    hl.bind(mod .. " + " .. i, hl.dsp.workspace(tostring(i)))
+    hl.bind(mod .. " + " .. i, hl.dsp.focus({ workspace = tostring(i) }))
     hl.bind(mod .. " + SHIFT + " .. i, hl.dsp.window.move({ workspace = tostring(i) }))
 end
 
@@ -129,6 +129,7 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"))
 
 -- Session services. Waybar is the temporary panel until the AKKAD
 -- Quickshell interface is implemented; both are deliberately independent.
+hl.exec_cmd("systemctl --user start hyprpolkitagent")
 hl.exec_cmd("mako")
 hl.exec_cmd("hyprpaper")
 hl.exec_cmd("hypridle")
