@@ -4,6 +4,7 @@ xdg-desktop-portal
 xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
 polkit
+hyprpolkitagent
 qt6-wayland
 
 # Desktop shell and status (initial foundation; shell will evolve)
