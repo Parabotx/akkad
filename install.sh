@@ -53,9 +53,15 @@ for source in "$ROOT"/config/*; do
   cp -a "$source/." "$CONFIG_HOME/$name/"
 done
 
-mkdir -p "$HOME/.local/bin"
-install -m 755 "$ROOT/scripts/akkad-update" "$HOME/.local/bin/akkad-update"
-install -m 755 "$ROOT/scripts/akkad-doctor" "$HOME/.local/bin/akkad-doctor"
+REPO_HOME="$HOME/.local/share/akkad"
+mkdir -p "$HOME/.local/bin" "$(dirname "$REPO_HOME")"
+if [[ "$(realpath "$ROOT")" != "$(realpath -m "$REPO_HOME")" ]]; then
+  mkdir -p "$REPO_HOME"
+  cp -a "$ROOT"/. "$REPO_HOME"/
+fi
+install -m 755 "$REPO_HOME/scripts/akkad" "$HOME/.local/bin/akkad"
+install -m 755 "$REPO_HOME/scripts/akkad-update" "$HOME/.local/bin/akkad-update"
+install -m 755 "$REPO_HOME/scripts/akkad-doctor" "$HOME/.local/bin/akkad-doctor"
 
 say "Installation complete."
 say "Ensure ~/.local/bin is in PATH, then log out and choose the Hyprland session."
