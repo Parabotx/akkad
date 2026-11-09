@@ -23,7 +23,7 @@ Item {
             root.appName
         ];
         for (var i = 0; i < candidates.length; i++) {
-            var candidate = String(candidates[i] || "").toLowerCase().replace(/\\.desktop$/, "");
+            var candidate = String(candidates[i] || "").toLowerCase().replace(/\.desktop$/, "");
             if (candidate.length > 2 &&
                 (activeId === candidate || activeId.indexOf(candidate) >= 0 || candidate.indexOf(activeId) >= 0))
                 return true;

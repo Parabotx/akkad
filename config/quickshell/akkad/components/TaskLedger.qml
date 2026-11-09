@@ -15,7 +15,7 @@ Item {
     property var completedTasks: root.tasks.filter(function(task) { return task.completed; })
     property var displayedTasks: root.showCompleted ? root.completedTasks : root.pendingTasks
     property var upcomingTask: {
-        var scheduled = root.pendingTasks.filter(function(task) { return task.due && Date.parse(task.due) > Date.now(); });
+        var scheduled = root.pendingTasks.filter(function(task) { return task.due && Date.parse(task.due) > root.currentTime; });
         scheduled.sort(function(a, b) { return Date.parse(a.due) - Date.parse(b.due); });
         return scheduled.length ? scheduled[0] : null;
     }
@@ -111,6 +111,13 @@ Item {
         atomicWrites: true
         watchChanges: true
         onFileChanged: root.loadTasks()
+    }
+
+    Timer {
+        interval: 60000
+        repeat: true
+        running: true
+        onTriggered: root.currentTime = Date.now()
     }
 
     Component.onCompleted: root.loadTasks()
