@@ -66,15 +66,40 @@ fi
 printf '%s %s %s\n' "$now" "$rx_bytes" "$tx_bytes" > "$NET_STATE"
 
 temperature="null"
-for temp_file in /sys/class/thermal/thermal_zone*/temp; do
-  [[ -r "$temp_file" ]] || continue
-  raw_temp=$(<"$temp_file")
-  if [[ "$raw_temp" =~ ^[0-9]+$ ]] && (( raw_temp > 0 && raw_temp < 150000 )); then
-    temperature=$(awk -v t="$raw_temp" 'BEGIN { if (t > 1000) printf "%.1f", t/1000; else printf "%.1f", t }')
-    break
-  fi
+# Prefer actual CPU/package sensors exposed by hwmon (for example Intel coretemp).
+for hwmon_dir in /sys/class/hwmon/hwmon*; do
+  [[ -r "$hwmon_dir/name" ]] || continue
+  sensor_name="$(<"$hwmon_dir/name")"
+  case "$sensor_name" in
+    coretemp|k10temp|zenpower|cpu_thermal|cpu-thermal|soc_thermal)
+      for temp_file in "$hwmon_dir"/temp*_input; do
+        [[ -r "$temp_file" ]] || continue
+        raw_temp="$(<"$temp_file")"
+        if [[ "$raw_temp" =~ ^[0-9]+$ ]] && (( raw_temp > 0 && raw_temp < 150000 )); then
+          temperature="$(awk -v t="$raw_temp" 'BEGIN { printf "%.1f", t/1000 }')"
+          break 2
+        fi
+      done
+      ;;
+  esac
 done
 
+# Some kernels expose CPU/package temperature as a thermal zone instead.
+if [[ "$temperature" == "null" ]]; then
+  for zone_dir in /sys/class/thermal/thermal_zone*; do
+    [[ -r "$zone_dir/type" && -r "$zone_dir/temp" ]] || continue
+    zone_type="$(<"$zone_dir/type")"
+    case "$zone_type" in
+      *cpu*|*CPU*|*pkg*|*package*)
+        raw_temp="$(<"$zone_dir/temp")"
+        if [[ "$raw_temp" =~ ^[0-9]+$ ]] && (( raw_temp > 0 && raw_temp < 150000 )); then
+          temperature="$(awk -v t="$raw_temp" 'BEGIN { printf "%.1f", t/1000 }')"
+          break
+        fi
+        ;;
+    esac
+  done
+fi
 network_status="offline"
 [[ -n "$iface" ]] && network_status="connected"
 printf '{"cpu":%s,"ram_used":%s,"ram_total":%s,"ram_percent":%s,"disk_used":%s,"disk_total":%s,"disk_percent":%s,"rx_kib":%s,"tx_kib":%s,"interface":"%s","network":"%s","temperature":%s}\n' \

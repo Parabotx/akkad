@@ -130,7 +130,7 @@ Item {
                     }
                 }
                 Text {
-                    text: root.metrics.temperature === null ? "THERMAL  ·  NOT EXPOSED" : "THERMAL  ·  " + root.metrics.temperature + " °C"
+                    text: root.metrics.temperature === null ? "CPU TEMP  ·  NOT EXPOSED" : "CPU TEMP  ·  " + root.metrics.temperature + " °C"
                     color: Palette.muted
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 7
