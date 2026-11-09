@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import "Palette.js" as Palette
 
 Item {
@@ -12,6 +13,23 @@ Item {
     property int buttonSize: 34
     property string tooltip: appName
     readonly property var entry: appName.length > 0 ? DesktopEntries.heuristicLookup(appName) : null
+    readonly property bool isActive: {
+        var active = Hyprland.activeToplevel;
+        if (!active || !active.appId) return false;
+        var activeId = String(active.appId).toLowerCase();
+        var candidates = [
+            root.entry && root.entry.startupClass ? root.entry.startupClass : "",
+            root.entry && root.entry.id ? root.entry.id : "",
+            root.appName
+        ];
+        for (var i = 0; i < candidates.length; i++) {
+            var candidate = String(candidates[i] || "").toLowerCase().replace(/\\.desktop$/, "");
+            if (candidate.length > 2 &&
+                (activeId === candidate || activeId.indexOf(candidate) >= 0 || candidate.indexOf(activeId) >= 0))
+                return true;
+        }
+        return false;
+    }
 
     width: buttonSize
     height: buttonSize
@@ -59,11 +77,11 @@ Item {
     Rectangle {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        width: mouse.containsMouse ? 12 : 4
-        height: 2
+        width: root.isActive ? 14 : (mouse.containsMouse ? 12 : 4)
+        height: root.isActive ? 3 : 2
         radius: 1
         color: Palette.amber
-        opacity: mouse.containsMouse ? 0.95 : 0.48
+        opacity: root.isActive ? 0.95 : (mouse.containsMouse ? 0.9 : 0.35)
         Behavior on width { NumberAnimation { duration: 120 } }
     }
 }

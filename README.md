@@ -13,7 +13,7 @@ The first usable shell layout includes:
 - A persistent task ledger with add, edit, complete, delete and due dates.
 - A live monthly calendar marking dates with pending tasks.
 - A music panel backed by Quickshell's MPRIS integration.
-- A compact bottom dock with actual app launchers; optional apps appear only when installed.
+- A compact bottom dock with actual app launchers, focused-app markers and optional apps shown only when installed.
 
 The wallpaper is deliberately not replaced. AKKAD leaves your current wallpaper and wallpaper manager alone.
 
