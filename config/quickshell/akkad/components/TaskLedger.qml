@@ -110,7 +110,8 @@ Item {
         blockLoading: true
         atomicWrites: true
         watchChanges: true
-        onFileChanged: root.loadTasks()
+        onFileChanged: this.reload()
+        onLoaded: root.loadTasks()
     }
 
     Timer {
