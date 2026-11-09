@@ -1,0 +1,45 @@
+# Core compositor and session
+hyprland
+xdg-desktop-portal
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+polkit
+qt6-wayland
+
+# Desktop shell and status (initial foundation; shell will evolve)
+quickshell
+waybar
+
+# Essential applications
+foot
+fuzzel
+mako
+thunar
+firefox
+
+# Lock, idle, wallpaper and screenshots
+hyprlock
+hypridle
+hyprpaper
+grim
+slurp
+wl-clipboard
+cliphist
+
+# Audio, network and system integration
+pipewire
+pipewire-pulse
+wireplumber
+pavucontrol
+network-manager-applet
+brightnessctl
+playerctl
+udiskie
+dunst
+
+# Fonts, themes and utilities
+ttf-jetbrains-mono-nerd
+noto-fonts
+noto-fonts-emoji
+papirus-icon-theme
+adw-gtk3
