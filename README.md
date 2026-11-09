@@ -1,25 +1,23 @@
 # AKKAD
 
-**An abstract, historically rooted Arch Linux desktop environment built on Hyprland.**
+**A Mesopotamian-inspired Arch Linux desktop environment built on Hyprland and Quickshell.**
 
-AKKAD is a new desktop project, not a replacement or fork of A16EEN. It is designed as a modular, keyboard-first environment with a distinctive visual language inspired by the earliest cities, writing systems, architecture, and material culture of ancient Mesopotamia.
+AKKAD is an independent desktop project, separate from A16EEN. Its visual language draws from ancient imperial architecture, carved stone, astronomy, seals and bronze instruments — interpreted as a restrained modern interface rather than a generic gaming HUD.
 
-> Foundation first. Every subsystem should be replaceable, recoverable, and documented.
+## Current shell
 
-## Status
+The first usable shell layout includes:
+- A miniature centered navbar with real Hyprland workspace indicators.
+- An astronomical clock and live system date.
+- A left-side monitor for CPU, memory, storage, temperature when exposed, and network throughput.
+- A persistent task ledger with add, edit, complete, delete and due dates.
+- A live monthly calendar marking dates with pending tasks.
+- A music panel backed by Quickshell's MPRIS integration.
+- A compact bottom dock with actual app launchers; optional apps appear only when installed.
 
-<sub>Early foundation — expect active development and breaking changes.</sub>
-
-The initial foundation provides:
-- A modern Hyprland Lua configuration (Hyprland 0.55+).
-- A conservative Arch Linux installer with backups and explicit confirmation.
-- Essential terminal, launcher, notifications, wallpaper, lock and idle tools.
-- A modular configuration layout and a simple update command.
-- Safe defaults: no display-manager replacement, no automatic login, no destructive cleanup.
+The wallpaper is deliberately not replaced. AKKAD leaves your current wallpaper and wallpaper manager alone.
 
 ## Install
-
-Clone the repository and run:
 
 ```bash
 git clone https://github.com/Parabotx/akkad.git
@@ -27,53 +25,53 @@ cd akkad
 ./install.sh
 ```
 
-The installer previews packages, asks before installing, backs up existing AKKAD-managed target files, and installs user configuration. It does not remove your current desktop environment.
+The installer previews packages and asks before installing. Existing managed configuration folders are backed up under `~/.local/state/akkad/backups/`. It does not remove your current desktop, replace your display manager, change boot settings, or modify GPU drivers.
 
-Log out and select **Hyprland** from your display manager, or start it from a TTY with `start-hyprland`.
+After installation, log out and select Hyprland. The AKKAD Quickshell interface starts with the Hyprland session.
 
-The installer keeps a checkout at `~/.local/share/akkad` and adds the `akkad` command to `~/.local/bin`.
+## Commands
 
-## First shortcuts
-
-| Shortcut | Action |
+| Command | Action |
 | --- | --- |
-| `Super + Return` | Terminal |
-| `Super + Space` | Application launcher |
-| `Super + Q` | Close focused window |
-| `Super + F` | Toggle floating |
-| `Super + 1…5` | Switch workspace |
-| `Super + Shift + 1…5` | Move window to workspace |
-| `Super + H/J/K/L` | Focus direction |
-| `Super + Shift + H/J/K/L` | Move window |
-| `Super + Escape` | Lock screen |
-| `Super + Shift + E` | Exit Hyprland |
+| `akkad -h` | Help |
+| `akkad -u` | Update repository and sync configuration |
+| `akkad -d` | Diagnostics |
+| `akkad -s` | Start the shell now |
+| `akkad -r` | Restart the shell |
+| `akkad -x` | Stop it for this session |
+| `akkad --disable-shell` | Stop and disable future autostart |
+| `akkad --enable-shell` | Re-enable autostart and start it |
+
+Hyprland shortcuts: `Super + Return` terminal, `Super + Space` launcher, `Super + Escape` lock, `Super + Alt + R` restart AKKAD shell, and `Super + 1…5` change workspace.
+
+## Data and configuration
+
+- Quickshell configuration: `~/.config/quickshell/akkad/`
+- Persistent tasks: `~/.local/share/akkad-shell/tasks.json`
+- Linux telemetry helper: `~/.config/quickshell/akkad/scripts/akkad-stats`
+- Hyprland configuration: `~/.config/hypr/hyprland.lua`
+- Installer backups: `~/.local/state/akkad/backups/`
+- Update backups: `~/.local/state/akkad/update-backups/`
+
+Task records are stored separately from the Git checkout and survive AKKAD updates.
 
 ## Repository layout
 
 - `config/hypr/` — Hyprland Lua configuration.
-- `config/foot/` — terminal configuration.
-- `config/fuzzel/` — application launcher.
-- `config/mako/` — notification daemon.
-- `config/hyprlock/` — lock screen.
-- `config/hypridle/` — idle and screen-power behavior.
-- `config/waybar/` — temporary status bar foundation.
-- `packages/` — curated package lists.
-- `scripts/` — maintenance helpers.
-- `docs/` — design and development notes.
+- `config/quickshell/akkad/` — Quickshell entry point and reusable QML components.
+- `config/foot/`, `config/fuzzel/`, `config/mako/` — terminal, launcher and notifications.
+- `config/hyprlock/`, `config/hypr/` — lock and idle behavior.
+- `config/waybar/` — optional fallback panel, not started by default.
+- `packages/` — base package list.
+- `scripts/` — installation, update, shell control and telemetry.
+- `docs/` — design, installation and recovery notes.
 
-## Principles
+## Safety and current limits
 
-1. **Independent:** AKKAD never assumes A16EEN or Niri is installed.
-2. **Modular:** each component has a clear boundary and can be replaced.
-3. **Recoverable:** installers back up files and never overwrite silently.
-4. **Native first:** prefer Arch repository packages over fragile -git builds.
-5. **Accessible:** keyboard navigation, readable contrast, and reduced-motion options.
-6. **Distinctive:** abstract, restrained, architectural — not a generic neon gaming rice.
+- No wallpaper is downloaded or overwritten.
+- CPU, RAM, disk and network values are read from the local Linux system; unavailable sensor values show as unavailable.
+- Music controls depend on a media application exposing MPRIS and on the player supporting the requested operation.
+- VS Code and Discord dock icons are conditional on installed desktop entries.
+- Initial widget placement is tuned for a 1920×1080 single-screen laptop; multi-monitor layout and actual performance still need testing on the target machine.
 
-## Important
-
-Hyprland's configuration changed to Lua in version 0.55. AKKAD targets the current Lua configuration model. The installer checks for the required tools but does not attempt to modify system boot, login, GPU drivers, or display-manager configuration.
-
-Use `akkad -u` to update, `akkad -d` to run diagnostics, and `akkad -h` for help.
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
+See [docs/SHELL.md](docs/SHELL.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/INSTALL.md](docs/INSTALL.md) and [docs/RECOVERY.md](docs/RECOVERY.md).

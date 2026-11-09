@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -u
 
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
 printf '\033[1;36mAKKAD system check\033[0m\n\n'
-for cmd in Hyprland start-hyprland hyprctl foot fuzzel mako hyprlock hypridle hyprpaper waybar qs wpctl; do
+for cmd in Hyprland start-hyprland hyprctl quickshell foot fuzzel firefox thunar mako hyprlock hypridle hyprpaper playerctl wpctl bash; do
   if command -v "$cmd" >/dev/null 2>&1; then
     printf '  [OK]      %s\n' "$cmd"
   else
@@ -10,13 +13,30 @@ for cmd in Hyprland start-hyprland hyprctl foot fuzzel mako hyprlock hypridle hy
   fi
 done
 
+printf '\nConfiguration files:\n'
+for path in \
+  "$CONFIG_HOME/hypr/hyprland.lua" \
+  "$CONFIG_HOME/quickshell/akkad/shell.qml" \
+  "$CONFIG_HOME/quickshell/akkad/scripts/akkad-stats" \
+  "$DATA_HOME/akkad-shell/tasks.json"; do
+  if [[ -f "$path" ]]; then
+    printf '  [OK]      %s\n' "$path"
+  else
+    printf '  [MISSING] %s\n' "$path"
+  fi
+done
+
 printf '\nSession: %s\n' "${XDG_SESSION_TYPE:-unknown}"
 printf 'Desktop: %s\n' "${XDG_CURRENT_DESKTOP:-unknown}"
-printf 'Config:  %s\n' "${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.lua"
 
 if command -v hyprctl >/dev/null 2>&1 && [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
   printf '\nHyprland version:\n'
   hyprctl version
 else
   printf '\nHyprland is not currently running in this session.\n'
+fi
+
+if command -v quickshell >/dev/null 2>&1; then
+  printf '\nQuickshell version:\n'
+  quickshell --version 2>/dev/null || true
 fi

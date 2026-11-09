@@ -18,7 +18,7 @@ else
 fi
 
 mkdir -p "$BACKUP_DIR"
-for name in hypr foot fuzzel mako hyprlock hypridle waybar; do
+for name in hypr foot fuzzel mako hyprlock hypridle waybar quickshell; do
   [[ -e "$CONFIG_HOME/$name" ]] && cp -a "$CONFIG_HOME/$name" "$BACKUP_DIR/"
 done
 
@@ -30,7 +30,13 @@ for source in "$REPO_DIR"/config/*; do
 done
 
 install -m 755 "$REPO_DIR/scripts/akkad" "$HOME/.local/bin/akkad"
+install -m 755 "$REPO_DIR/scripts/akkad-shell" "$HOME/.local/bin/akkad-shell"
 install -m 755 "$REPO_DIR/scripts/akkad-update" "$HOME/.local/bin/akkad-update"
 install -m 755 "$REPO_DIR/scripts/akkad-doctor" "$HOME/.local/bin/akkad-doctor"
+
 say "Updated configuration. Previous copies are in $BACKUP_DIR"
-say "Review your local overrides before reloading Hyprland."
+if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v quickshell >/dev/null 2>&1; then
+  "$HOME/.local/bin/akkad-shell" restart
+else
+  say "Log into Hyprland or run 'akkad -r' to reload the shell."
+fi

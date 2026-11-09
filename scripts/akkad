@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-VERSION="0.1.0"
+VERSION="0.2.0"
 BIN_DIR="$HOME/.local/bin"
 REPO_DIR="${AKKAD_DIR:-$HOME/.local/share/akkad}"
 
@@ -10,11 +10,16 @@ usage() {
 AKKAD — Arch Linux desktop environment
 
 Usage:
-  akkad -u, --update     Pull updates and safely sync configuration
-  akkad -d, --doctor     Check required desktop components
-  akkad -i, --install    Run the installer from the repository checkout
-  akkad -v, --version    Show version
-  akkad -h, --help       Show this help
+  akkad -u, --update          Pull updates and safely sync configuration
+  akkad -d, --doctor          Check desktop components and shell files
+  akkad -i, --install         Run the installer from the repository checkout
+  akkad -s, --shell            Start the AKKAD shell now
+  akkad -r, --restart-shell    Restart the AKKAD shell
+  akkad -x, --stop-shell       Stop the shell for this session
+  akkad --disable-shell        Disable shell autostart and stop it
+  akkad --enable-shell         Enable shell autostart and start it
+  akkad -v, --version          Show version
+  akkad -h, --help             Show this help
 
 Repository: https://github.com/Parabotx/akkad
 EOF
@@ -27,6 +32,11 @@ case "${1:---help}" in
     [[ -x "$REPO_DIR/install.sh" ]] || { printf 'AKKAD checkout not found at %s\n' "$REPO_DIR" >&2; exit 1; }
     exec "$REPO_DIR/install.sh"
     ;;
+  -s|--shell) exec "$BIN_DIR/akkad-shell" start ;;
+  -r|--restart-shell) exec "$BIN_DIR/akkad-shell" restart ;;
+  -x|--stop-shell) exec "$BIN_DIR/akkad-shell" stop ;;
+  --disable-shell) exec "$BIN_DIR/akkad-shell" disable ;;
+  --enable-shell) exec "$BIN_DIR/akkad-shell" enable ;;
   -v|--version) printf 'AKKAD %s\n' "$VERSION" ;;
   -h|--help) usage ;;
   *) printf 'Unknown option: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;

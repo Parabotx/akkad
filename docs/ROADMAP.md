@@ -1,30 +1,33 @@
 # Roadmap
 
-## Phase 0 — Foundation (current)
-- [x] Repository structure and project principles
+## Phase 0 — Repository foundation
+- [x] Independent AKKAD repository and project principles
 - [x] Hyprland Lua configuration baseline
 - [x] Safe installer with timestamped backups
-- [x] Essential launcher, terminal, notifications, lock and idle setup
-- [x] Basic update and diagnostics commands
-- [ ] Test on a clean Arch install and validate current Hyprland Lua API
+- [x] Diagnostics and update commands
 
-## Phase 1 — AKKAD shell
-- [ ] Quickshell project entry point and reusable QML components
-- [ ] Distinctive navbar with workspace and system indicators
-- [ ] Command palette and application launcher integration
-- [ ] Control center for Wi-Fi, Bluetooth, audio and brightness
-- [ ] Notification center with media controls
+## Phase 1 — First usable AKKAD shell
+- [x] Quickshell project entry point and reusable QML components
+- [x] Compact centered navbar with real Hyprland workspace switching
+- [x] Astronomical clock and current system date
+- [x] CPU, memory, disk, temperature-if-exposed and network monitor
+- [x] Persistent task ledger: add, edit title, complete, delete and due date
+- [x] Calendar with current date and pending-task markers
+- [x] MPRIS media panel with capability-aware controls
+- [x] Compact bottom dock with optional app detection
+- [x] Shell start, stop, restart and disable controls
+- [ ] Run on the target laptop and validate QML against its installed Quickshell build
 
-## Phase 2 — Desktop intelligence
-- [ ] Wallpaper-aware adaptive colors with an off switch
+## Phase 2 — Interaction and desktop settings
+- [ ] Expand quick settings for network, Bluetooth, audio and brightness
+- [ ] Full task editing and richer task scheduling
+- [ ] Notification center with app actions
+- [ ] Battery alerts and power profile controls
+- [ ] Optional sound-reactive visualizer when a compatible audio source exists
+
+## Phase 3 — Visual and reliability refinement
+- [ ] Wallpaper-aware theme engine with a disable switch
 - [ ] Per-app and global transparency controls
-- [ ] System update center with package count and download size
-- [ ] Battery alerts and power profiles
-- [ ] Lock screen settings and safe suspend/resume behavior
-
-## Phase 3 — Reliability and polish
-- [ ] Installer hardware checks and optional package profiles
-- [ ] Multi-monitor and touchpad refinement
-- [ ] Accessibility and reduced-motion controls
-- [ ] Automated configuration validation
-- [ ] Release packaging and versioned updater
+- [ ] Multi-monitor layout and per-monitor widget placement
+- [ ] Installer hardware profile and GPU-aware options
+- [ ] Automated QML/runtime validation and performance checks

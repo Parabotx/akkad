@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Lightweight live telemetry for the AKKAD shell. Reads Linux procfs/sysfs only.
+set -u
+
+STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/akkad-stats-${UID:-0}"
+mkdir -p "$STATE_DIR" 2>/dev/null || true
+CPU_STATE="$STATE_DIR/cpu"
+NET_STATE="$STATE_DIR/network"
+
+cpu_json="null"
+read -r _ user nice system idle iowait irq softirq steal < /proc/stat
+total_now=$((user + nice + system + idle + iowait + irq + softirq + steal))
+idle_now=$((idle + iowait))
+if [[ -r "$CPU_STATE" ]]; then
+  read -r total_prev idle_prev < "$CPU_STATE" || true
+  if [[ "${total_prev:-}" =~ ^[0-9]+$ && "${idle_prev:-}" =~ ^[0-9]+$ && $total_now -gt $total_prev ]]; then
+    cpu_json=$(awk -v t="$total_now" -v p="$total_prev" -v i="$idle_now" -v pi="$idle_prev" 'BEGIN { printf "%.1f", (1 - (i-p)/(t-p))*100 }')
+  fi
+fi
+printf '%s %s\n' "$total_now" "$idle_now" > "$CPU_STATE"
+
+mem_total_kb=$(awk '/^MemTotal:/ {print $2; exit}' /proc/meminfo)
+mem_avail_kb=$(awk '/^MemAvailable:/ {print $2; exit}' /proc/meminfo)
+mem_total=$((${mem_total_kb:-0} * 1024))
+mem_used=$(((${mem_total_kb:-0} - ${mem_avail_kb:-0}) * 1024))
+mem_percent="0"
+if [[ $mem_total -gt 0 ]]; then
+  mem_percent=$(awk -v u="$mem_used" -v t="$mem_total" 'BEGIN { printf "%.1f", (u/t)*100 }')
+fi
+
+read -r disk_total_kb disk_used_kb disk_percent_raw < <(df -Pk "$HOME" 2>/dev/null | awk 'END {gsub(/%/, "", $5); print $2, $3, $5}')
+disk_total=$((${disk_total_kb:-0} * 1024))
+disk_used=$((${disk_used_kb:-0} * 1024))
+disk_percent="${disk_percent_raw:-0}"
+
+iface=""
+if command -v ip >/dev/null 2>&1; then
+  iface=$(ip -o route show default 2>/dev/null | awk 'NR == 1 {for (i=1; i<=NF; i++) if ($i == "dev") {print $(i+1); exit}}')
+fi
+rx_bytes=0
+tx_bytes=0
+if [[ -n "$iface" ]]; then
+  read -r rx_bytes tx_bytes < <(awk -v wanted="$iface" '
+    NR > 2 {
+      split($0, fields, ":")
+      name=fields[1]
+      gsub(/^[ \t]+|[ \t]+$/, "", name)
+      if (name == wanted) {
+        gsub(/^[ \t]+/, "", fields[2])
+        split(fields[2], stats, /[ \t]+/)
+        print stats[1], stats[9]
+        exit
+      }
+    }' /proc/net/dev)
+fi
+now=$(date +%s)
+rx_rate="null"
+tx_rate="null"
+if [[ -r "$NET_STATE" ]]; then
+  read -r previous_time previous_rx previous_tx < "$NET_STATE" || true
+  if [[ "${previous_time:-}" =~ ^[0-9]+$ && "${previous_rx:-}" =~ ^[0-9]+$ && "${previous_tx:-}" =~ ^[0-9]+$ && $now -gt $previous_time ]]; then
+    rx_rate=$(awk -v n="$rx_bytes" -v p="$previous_rx" -v d="$((now-previous_time))" 'BEGIN { printf "%.1f", (n-p)/d/1024 }')
+    tx_rate=$(awk -v n="$tx_bytes" -v p="$previous_tx" -v d="$((now-previous_time))" 'BEGIN { printf "%.1f", (n-p)/d/1024 }')
+  fi
+fi
+printf '%s %s %s\n' "$now" "$rx_bytes" "$tx_bytes" > "$NET_STATE"
+
+temperature="null"
+for temp_file in /sys/class/thermal/thermal_zone*/temp; do
+  [[ -r "$temp_file" ]] || continue
+  raw_temp=$(<"$temp_file")
+  if [[ "$raw_temp" =~ ^[0-9]+$ ]] && (( raw_temp > 0 && raw_temp < 150000 )); then
+    temperature=$(awk -v t="$raw_temp" 'BEGIN { if (t > 1000) printf "%.1f", t/1000; else printf "%.1f", t }')
+    break
+  fi
+done
+
+network_status="offline"
+[[ -n "$iface" ]] && network_status="connected"
+printf '{"cpu":%s,"ram_used":%s,"ram_total":%s,"ram_percent":%s,"disk_used":%s,"disk_total":%s,"disk_percent":%s,"rx_kib":%s,"tx_kib":%s,"interface":"%s","network":"%s","temperature":%s}\n' \
+  "$cpu_json" "$mem_used" "$mem_total" "$mem_percent" "$disk_used" "$disk_total" "$disk_percent" "$rx_rate" "$tx_rate" "$iface" "$network_status" "$temperature"
